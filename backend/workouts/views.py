@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import ExerciseCategory, Workout, Comment
 from .serializers import (
     CategorySerializer,
@@ -22,7 +23,8 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 class WorkoutViewSet(viewsets.ModelViewSet):
     """ViewSet для тренировок (CRUD + дополнительные действия)"""
     queryset = Workout.objects.filter(is_published=True)
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filterset_fields = ['category']
     search_fields = ['title', 'description']
     ordering_fields = ['created_at', 'views', 'duration_minutes']
 
