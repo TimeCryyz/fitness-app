@@ -5,7 +5,7 @@ from . import views
 router = DefaultRouter()
 router.register(r'categories', views.CategoryViewSet)
 router.register(r'workouts', views.WorkoutViewSet)
-router.register(r'comments', views.CommentViewSet)
+router.register(r'comments', views.CommentViewSet, basename='comment')
 
 urlpatterns = [
     path('', include(router.urls)),
