@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
 import { workouts, categories } from './services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
@@ -143,9 +145,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/workouts" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           <Route path="/workout/:id" element={<div className="container mt-4"><h2>Детали тренировки</h2></div>} />
-          <Route path="/login" element={<div className="container mt-4"><h2>Вход</h2></div>} />
-          <Route path="/register" element={<div className="container mt-4"><h2>Регистрация</h2></div>} />
           <Route path="/my-workouts" element={<div className="container mt-4"><h2>Мои тренировки</h2></div>} />
           <Route path="/create" element={<div className="container mt-4"><h2>Создать тренировку</h2></div>} />
         </Routes>
