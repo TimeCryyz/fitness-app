@@ -48,14 +48,11 @@ function Home() {
   const [totalCategories, setTotalCategories] = useState(0);
   const [totalUsers, setTotalUsers] = useState(0);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
+    setLoading(true);
     try {
       const [workoutsRes, categoriesRes] = await Promise.all([
-        workouts.getAll(),
+        workouts.getAll({ ordering: '-views' }),
         categories.getAll(),
       ]);
 
@@ -84,6 +81,19 @@ function Home() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadData();
+
+    const handleFocus = () => {
+      loadData();
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, []);
 
   return (
     <div className="container mt-4">
