@@ -781,3 +781,35 @@ span {
 .card-text.text-muted {
   color: #8b949e !important;
 }
+.input-group input {
+  background: #1c1c1e !important;
+  border: 1px solid #3a3a3c !important;
+  color: #ffffff !important;
+}
+
+.input-group input::placeholder {
+  color: #8b949e !important;
+}
+
+.input-group input:focus {
+  border-color: #ff3b30 !important;
+  box-shadow: 0 0 0 2px rgba(255, 59, 48, 0.2) !important;
+  outline: none !important;
+}
+
+.form-control::placeholder {
+  color: #8b949e !important;
+  opacity: 1 !important;
+}
+
+input, textarea, select {
+  background: #1c1c1e !important;
+  border: 1px solid #3a3a3c !important;
+  color: #ffffff !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: #ff3b30 !important;
+  box-shadow: 0 0 0 2px rgba(255, 59, 48, 0.2) !important;
+  outline: none !important;
+}

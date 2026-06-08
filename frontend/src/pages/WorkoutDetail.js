@@ -16,7 +16,6 @@ function WorkoutDetail() {
     loadWorkout();
     loadComments();
 
-    // WebSocket connection
     const socket = new WebSocket(`ws://127.0.0.1:8000/ws/workouts/${id}/`);
     wsRef.current = socket;
 
@@ -26,10 +25,8 @@ function WorkoutDetail() {
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log('WebSocket message:', data);
       if (data.comment) {
         setCommentList(prev => {
-          // Проверяем, нет ли уже такого комментария
           const exists = prev.some(c => c.id === data.comment.id);
           if (exists) return prev;
           return [data.comment, ...prev];
@@ -39,10 +36,6 @@ function WorkoutDetail() {
 
     socket.onerror = (error) => {
       console.error('WebSocket error:', error);
-    };
-
-    socket.onclose = () => {
-      console.log('WebSocket closed');
     };
 
     return () => {
@@ -65,7 +58,6 @@ function WorkoutDetail() {
   const loadComments = async () => {
     try {
       const response = await comments.getByWorkout(id);
-      console.log('Comments loaded:', response.data);
       const commentsData = response.data?.results || response.data || [];
       setCommentList(commentsData);
     } catch (error) {
@@ -99,14 +91,10 @@ function WorkoutDetail() {
         text: currentText
       });
 
-      console.log('Comment created:', response.data);
-
-      // Заменяем временный комментарий на реальный
       setCommentList(prev =>
         prev.map(c => c.id === tempId ? response.data : c)
       );
 
-      // Отправляем через WebSocket
       if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
         wsRef.current.send(JSON.stringify({
           text: currentText,
@@ -115,14 +103,13 @@ function WorkoutDetail() {
       }
     } catch (error) {
       console.error('Ошибка отправки:', error);
-      // Удаляем временный комментарий при ошибке
       setCommentList(prev => prev.filter(c => c.id !== tempId));
       alert('Ошибка отправки комментария');
     }
   };
 
-  if (loading) return <div className="container mt-4">Загрузка...</div>;
-  if (!workout) return <div className="container mt-4">Тренировка не найдена</div>;
+  if (loading) return <div className="container mt-4" style={{ color: '#fff' }}>Загрузка...</div>;
+  if (!workout) return <div className="container mt-4" style={{ color: '#fff' }}>Тренировка не найдена</div>;
 
   return (
     <div className="container mt-4">
@@ -130,26 +117,26 @@ function WorkoutDetail() {
 
       <div className="row">
         <div className="col-md-8">
-          <h1>{workout.title}</h1>
-          <p className="text-muted">
+          <h1 style={{ color: '#fff' }}>{workout.title}</h1>
+          <p style={{ color: '#8b949e' }}>
             Категория: {workout.category?.name || workout.category_name} | Длительность: {workout.duration_minutes} мин |
             Калории: {workout.calories_burn} | Просмотров: {workout.views}
           </p>
           {workout.image && (
-            <img src={workout.image} className="img-fluid mb-3" alt={workout.title} style={{ maxHeight: '300px', objectFit: 'cover' }} />
+            <img src={workout.image} className="img-fluid mb-3" alt={workout.title} style={{ maxHeight: '300px', objectFit: 'cover', borderRadius: '16px' }} />
           )}
-          <div className="card mb-4">
+          <div className="card mb-4" style={{ background: '#2c2c2e', border: '1px solid #3a3a3c' }}>
             <div className="card-body">
-              <p>{workout.description}</p>
+              <p style={{ color: '#e1e1e6', lineHeight: 1.6 }}>{workout.description}</p>
               {workout.video_url && (
-                <a href={workout.video_url} className="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                <a href={workout.video_url} className="btn btn-primary" target="_blank" rel="noopener noreferrer" style={{ marginTop: '1rem' }}>
                   Смотреть видео
                 </a>
               )}
             </div>
           </div>
 
-          <h3>Комментарии ({commentList.length})</h3>
+          <h3 style={{ color: '#fff', marginTop: '2rem' }}>Комментарии ({commentList.length})</h3>
 
           {user ? (
             <form onSubmit={sendComment} className="mb-4">
@@ -160,26 +147,27 @@ function WorkoutDetail() {
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Написать комментарий..."
+                  style={{ background: '#1c1c1e', border: '1px solid #3a3a3c', color: '#fff' }}
                 />
                 <button type="submit" className="btn btn-primary">Отправить</button>
               </div>
             </form>
           ) : (
-            <div className="alert alert-info">
-              <Link to="/login">Авторизуйтесь</Link>, чтобы оставить комментарий
+            <div className="alert alert-info" style={{ background: 'rgba(255, 59, 48, 0.15)', borderLeft: '4px solid #ff3b30', color: '#e1e1e6' }}>
+              <Link to="/login" style={{ color: '#ff3b30' }}>Авторизуйтесь</Link>, чтобы оставить комментарий
             </div>
           )}
 
           <div className="comments-list">
             {commentList.length === 0 ? (
-              <p className="text-muted">Пока нет комментариев. Будьте первым!</p>
+              <p style={{ color: '#8b949e' }}>Пока нет комментариев. Будьте первым!</p>
             ) : (
               commentList.map((comment) => (
-                <div key={comment.id} className="card mb-2">
+                <div key={comment.id} className="card mb-2" style={{ background: '#1c1c1e', border: '1px solid #3a3a3c' }}>
                   <div className="card-body">
-                    <strong>{comment.author_name}</strong>
-                    <small className="text-muted ms-2">{comment.created_at}</small>
-                    <p className="mt-2 mb-0">{comment.text}</p>
+                    <strong style={{ color: '#ff3b30' }}>{comment.author_name}</strong>
+                    <small style={{ color: '#8b949e', marginLeft: '0.5rem' }}>{comment.created_at}</small>
+                    <p style={{ color: '#e1e1e6', marginTop: '0.5rem', marginBottom: 0 }}>{comment.text}</p>
                   </div>
                 </div>
               ))
