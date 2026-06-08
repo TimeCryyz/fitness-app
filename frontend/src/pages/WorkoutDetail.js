@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { workouts, comments } from '../services/api';
@@ -9,23 +9,40 @@ function WorkoutDetail() {
   const [workout, setWorkout] = useState(null);
   const [commentList, setCommentList] = useState([]);
   const [commentText, setCommentText] = useState('');
-  const [ws, setWs] = useState(null);
   const [loading, setLoading] = useState(true);
+  const wsRef = useRef(null);
 
   useEffect(() => {
     loadWorkout();
     loadComments();
 
+    // WebSocket connection
     const socket = new WebSocket(`ws://127.0.0.1:8000/ws/workouts/${id}/`);
-    setWs(socket);
+    wsRef.current = socket;
+
+    socket.onopen = () => {
+      console.log('WebSocket connected');
+    };
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      setCommentList(prev => [data.comment, ...prev]);
+      console.log('WebSocket message:', data);
+      if (data.comment) {
+        setCommentList(prev => {
+          // Проверяем, нет ли уже такого комментария
+          const exists = prev.some(c => c.id === data.comment.id);
+          if (exists) return prev;
+          return [data.comment, ...prev];
+        });
+      }
     };
 
     socket.onerror = (error) => {
       console.error('WebSocket error:', error);
+    };
+
+    socket.onclose = () => {
+      console.log('WebSocket closed');
     };
 
     return () => {
@@ -48,9 +65,12 @@ function WorkoutDetail() {
   const loadComments = async () => {
     try {
       const response = await comments.getByWorkout(id);
-      setCommentList(response.data);
+      console.log('Comments loaded:', response.data);
+      const commentsData = response.data?.results || response.data || [];
+      setCommentList(commentsData);
     } catch (error) {
       console.error('Ошибка загрузки комментариев:', error);
+      setCommentList([]);
     } finally {
       setLoading(false);
     }
@@ -60,23 +80,44 @@ function WorkoutDetail() {
     e.preventDefault();
     if (!commentText.trim() || !user) return;
 
+    const tempId = Date.now();
     const tempComment = {
-      id: Date.now(),
+      id: tempId,
       text: commentText,
       author_name: user.username,
-      created_at: 'Отправка...'
+      created_at: 'Отправка...',
+      isTemp: true
     };
+
     setCommentList(prev => [tempComment, ...prev]);
+    const currentText = commentText;
     setCommentText('');
 
     try {
-      await comments.create({ workout_id: id, text: commentText });
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ text: commentText, user_id: user.id }));
+      const response = await comments.create({
+        workout_id: parseInt(id),
+        text: currentText
+      });
+
+      console.log('Comment created:', response.data);
+
+      // Заменяем временный комментарий на реальный
+      setCommentList(prev =>
+        prev.map(c => c.id === tempId ? response.data : c)
+      );
+
+      // Отправляем через WebSocket
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({
+          text: currentText,
+          user_id: user.id
+        }));
       }
     } catch (error) {
-      console.error('Ошибка отправки комментария:', error);
-      loadComments();
+      console.error('Ошибка отправки:', error);
+      // Удаляем временный комментарий при ошибке
+      setCommentList(prev => prev.filter(c => c.id !== tempId));
+      alert('Ошибка отправки комментария');
     }
   };
 
@@ -91,7 +132,7 @@ function WorkoutDetail() {
         <div className="col-md-8">
           <h1>{workout.title}</h1>
           <p className="text-muted">
-            Категория: {workout.category?.name} | Длительность: {workout.duration_minutes} мин |
+            Категория: {workout.category?.name || workout.category_name} | Длительность: {workout.duration_minutes} мин |
             Калории: {workout.calories_burn} | Просмотров: {workout.views}
           </p>
           {workout.image && (
@@ -108,12 +149,18 @@ function WorkoutDetail() {
             </div>
           </div>
 
-          <h3>Комментарии {commentList.length > 0 && `(${commentList.length})`}</h3>
+          <h3>Комментарии ({commentList.length})</h3>
 
           {user ? (
             <form onSubmit={sendComment} className="mb-4">
               <div className="input-group">
-                <input type="text" className="form-control" value={commentText} onChange={(e) => setCommentText(e.target.value)} placeholder="Написать комментарий..." />
+                <input
+                  type="text"
+                  className="form-control"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  placeholder="Написать комментарий..."
+                />
                 <button type="submit" className="btn btn-primary">Отправить</button>
               </div>
             </form>

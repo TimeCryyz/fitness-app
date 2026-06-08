@@ -22,6 +22,8 @@ export const AuthProvider = ({ children }) => {
   const loadProfile = async () => {
     try {
       const response = await auth.getProfile();
+      console.log('Profile loaded:', response.data);
+      console.log('Username:', response.data.username);
       setUser(response.data);
     } catch (err) {
       console.error('Ошибка загрузки профиля:', err);
@@ -36,9 +38,11 @@ export const AuthProvider = ({ children }) => {
     try {
       setError(null);
       const response = await auth.register(userData);
+      console.log('Register success:', response.data);
       return response.data;
     } catch (err) {
-      setError(err.response?.data?.password?.[0] || 'Ошибка регистрации');
+      console.error('Register error:', err.response?.data);
+      setError(err.response?.data?.password?.[0] || err.response?.data?.detail || 'Ошибка регистрации');
       throw err;
     }
   };
@@ -48,17 +52,20 @@ export const AuthProvider = ({ children }) => {
       setError(null);
       const response = await auth.login(credentials);
       const { access, refresh } = response.data;
+      console.log('Login success, tokens received');
       localStorage.setItem('access_token', access);
       localStorage.setItem('refresh_token', refresh);
       await loadProfile();
       return response.data;
     } catch (err) {
+      console.error('Login error:', err.response?.data);
       setError(err.response?.data?.detail || 'Ошибка входа');
       throw err;
     }
   };
 
   const logout = () => {
+    console.log('Logout');
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     setUser(null);
