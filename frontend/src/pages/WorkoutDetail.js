@@ -98,6 +98,13 @@ function WorkoutDetail() {
       setCommentList(prev =>
         prev.map(c => c.id === tempId ? response.data : c)
       );
+
+      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
+        wsRef.current.send(JSON.stringify({
+          text: currentText,
+          user_id: user.id
+        }));
+      }
     } catch (error) {
       console.error('Ошибка отправки:', error);
       setCommentList(prev => prev.filter(c => c.id !== tempId));

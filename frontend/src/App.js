@@ -63,18 +63,8 @@ function Home() {
       const categoriesData = categoriesRes.data.results || categoriesRes.data;
       setTotalCategories(categoriesData.length);
 
-      const token = localStorage.getItem('access_token');
-      if (token) {
-        try {
-          const usersRes = await fetch('http://127.0.0.1:8000/api/auth/register/');
-          const usersData = await usersRes.json();
-          setTotalUsers(usersData.length || 1);
-        } catch (e) {
-          setTotalUsers(1);
-        }
-      } else {
-        setTotalUsers(1);
-      }
+      setTotalUsers(1);
+
     } catch (error) {
       console.error('Ошибка загрузки:', error);
     } finally {
