@@ -3,12 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 function Register() {
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    password2: '',
-  });
+  const [formData, setFormData] = useState({ username: '', email: '', password: '', password2: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -33,6 +28,7 @@ function Register() {
         username: formData.username,
         email: formData.email,
         password: formData.password,
+        password2: formData.password2,
       });
       navigate('/login');
     } catch (err) {
@@ -49,65 +45,29 @@ function Register() {
           <div className="card">
             <div className="card-body">
               <h2 className="card-title text-center mb-4">Регистрация</h2>
-              {error && (
-                <div className="alert alert-danger">{error}</div>
-              )}
+              {error && <div className="alert alert-danger">{error}</div>}
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label className="form-label">Имя пользователя</label>
-                  <input
-                    type="text"
-                    name="username"
-                    className="form-control"
-                    value={formData.username}
-                    onChange={handleChange}
-                    required
-                  />
+                  <input type="text" name="username" className="form-control" value={formData.username} onChange={handleChange} required />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Email</label>
-                  <input
-                    type="email"
-                    name="email"
-                    className="form-control"
-                    value={formData.email}
-                    onChange={handleChange}
-                    required
-                  />
+                  <input type="email" name="email" className="form-control" value={formData.email} onChange={handleChange} required />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Пароль</label>
-                  <input
-                    type="password"
-                    name="password"
-                    className="form-control"
-                    value={formData.password}
-                    onChange={handleChange}
-                    required
-                  />
+                  <input type="password" name="password" className="form-control" value={formData.password} onChange={handleChange} required />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Подтверждение пароля</label>
-                  <input
-                    type="password"
-                    name="password2"
-                    className="form-control"
-                    value={formData.password2}
-                    onChange={handleChange}
-                    required
-                  />
+                  <input type="password" name="password2" className="form-control" value={formData.password2} onChange={handleChange} required />
                 </div>
-                <button
-                  type="submit"
-                  className="btn btn-primary w-100"
-                  disabled={loading}
-                >
+                <button type="submit" className="btn btn-primary w-100" disabled={loading}>
                   {loading ? 'Регистрация...' : 'Зарегистрироваться'}
                 </button>
               </form>
-              <p className="text-center mt-3">
-                Уже есть аккаунт? <Link to="/login">Войти</Link>
-              </p>
+              <p className="text-center mt-3">Уже есть аккаунт? <Link to="/login">Войти</Link></p>
             </div>
           </div>
         </div>

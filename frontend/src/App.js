@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import WorkoutDetail from './pages/WorkoutDetail';
 import { workouts, categories } from './services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
@@ -19,32 +20,18 @@ function Navbar() {
         </button>
         <div className="collapse navbar-collapse" id="navbarNav">
           <ul className="navbar-nav ms-auto">
-            <li className="nav-item">
-              <Link className="nav-link" to="/">Главная</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/workouts">Тренировки</Link>
-            </li>
+            <li className="nav-item"><Link className="nav-link" to="/">Главная</Link></li>
+            <li className="nav-item"><Link className="nav-link" to="/workouts">Тренировки</Link></li>
             {isAuthenticated ? (
               <>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/my-workouts">Мои тренировки</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/create">Создать</Link>
-                </li>
-                <li className="nav-item">
-                  <button className="nav-link btn btn-link" onClick={logout}>Выйти ({user?.username})</button>
-                </li>
+                <li className="nav-item"><Link className="nav-link" to="/my-workouts">Мои тренировки</Link></li>
+                <li className="nav-item"><Link className="nav-link" to="/create">Создать</Link></li>
+                <li className="nav-item"><button className="nav-link btn btn-link" onClick={logout}>Выйти ({user?.username})</button></li>
               </>
             ) : (
               <>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/login">Вход</Link>
-                </li>
-                <li className="nav-item">
-                  <Link className="nav-link" to="/register">Регистрация</Link>
-                </li>
+                <li className="nav-item"><Link className="nav-link" to="/login">Вход</Link></li>
+                <li className="nav-item"><Link className="nav-link" to="/register">Регистрация</Link></li>
               </>
             )}
           </ul>
@@ -91,38 +78,26 @@ function Home() {
           <div className="card">
             <div className="card-body">
               <h5 className="card-title">Фильтр по категориям</h5>
-              <select
-                className="form-select"
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-              >
+              <select className="form-select" value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
                 <option value="">Все категории</option>
-                {categoriesList.map((cat) => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
+                {categoriesList.map((cat) => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
               </select>
             </div>
           </div>
         </div>
 
         <div className="col-md-9">
-          {loading ? (
-            <div className="text-center">Загрузка...</div>
-          ) : workoutList.length === 0 ? (
-            <div className="alert alert-info">Нет тренировок</div>
+          {loading ? (<div className="text-center">Загрузка...</div>
+          ) : workoutList.length === 0 ? (<div className="alert alert-info">Нет тренировок</div>
           ) : (
             <div className="row">
               {workoutList.map((workout) => (
                 <div className="col-md-6 mb-3" key={workout.id}>
                   <div className="card h-100">
-                    {workout.image && (
-                      <img src={workout.image} className="card-img-top" alt={workout.title} />
-                    )}
+                    {workout.image && <img src={workout.image} className="card-img-top" alt={workout.title} />}
                     <div className="card-body">
                       <h5 className="card-title">{workout.title}</h5>
-                      <p className="card-text text-muted">
-                        Категория: {workout.category_name} | {workout.duration_minutes} мин | {workout.calories_burn} кал
-                      </p>
+                      <p className="card-text text-muted">{workout.category_name} | {workout.duration_minutes} мин | {workout.calories_burn} кал</p>
                       <p className="card-text">{workout.description?.substring(0, 100)}...</p>
                       <Link to={`/workout/${workout.id}`} className="btn btn-primary">Подробнее</Link>
                     </div>
@@ -147,7 +122,7 @@ function App() {
           <Route path="/workouts" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/workout/:id" element={<div className="container mt-4"><h2>Детали тренировки</h2></div>} />
+          <Route path="/workout/:id" element={<WorkoutDetail />} />
           <Route path="/my-workouts" element={<div className="container mt-4"><h2>Мои тренировки</h2></div>} />
           <Route path="/create" element={<div className="container mt-4"><h2>Создать тренировку</h2></div>} />
         </Routes>

@@ -21,22 +21,11 @@ class ExerciseCategory(models.Model):
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
-
 class Workout(models.Model):
     title = models.CharField('Название тренировки', max_length=200)
     description = models.TextField('Описание')
-    category = models.ForeignKey(
-        ExerciseCategory,
-        on_delete=models.PROTECT,
-        verbose_name='Категория',
-        related_name='workouts'
-    )
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        verbose_name='Автор',
-        related_name='workouts'
-    )
+    category = models.ForeignKey(ExerciseCategory, on_delete=models.PROTECT, verbose_name='Категория', related_name='workouts')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Автор', related_name='workouts')
     duration_minutes = models.PositiveIntegerField('Длительность (мин)', default=30)
     calories_burn = models.PositiveIntegerField('Сжигаемые калории', default=200)
     video_url = models.URLField('Ссылка на видео', blank=True)
@@ -54,20 +43,9 @@ class Workout(models.Model):
     def __str__(self):
         return self.title
 
-
 class Comment(models.Model):
-    workout = models.ForeignKey(
-        Workout,
-        on_delete=models.CASCADE,
-        verbose_name='Тренировка',
-        related_name='comments'
-    )
-    author = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        verbose_name='Автор',
-        related_name='comments'
-    )
+    workout = models.ForeignKey(Workout, on_delete=models.CASCADE, verbose_name='Тренировка', related_name='comments')
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='Автор', related_name='comments')
     text = models.TextField('Текст комментария')
     created_at = models.DateTimeField('Дата создания', auto_now_add=True)
 

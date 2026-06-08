@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
       const response = await auth.register(userData);
       return response.data;
     } catch (err) {
-      setError(err.response?.data?.message || 'Ошибка регистрации');
+      setError(err.response?.data?.password?.[0] || 'Ошибка регистрации');
       throw err;
     }
   };
@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }) => {
       await loadProfile();
       return response.data;
     } catch (err) {
-      setError(err.response?.data?.message || 'Ошибка входа');
+      setError(err.response?.data?.detail || 'Ошибка входа');
       throw err;
     }
   };

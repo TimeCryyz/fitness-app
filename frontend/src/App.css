@@ -1,38 +1,62 @@
-.App {
-  text-align: center;
+:root {
+  --yellow-primary: #f5c518;
+  --yellow-dark: #d4a800;
+  --yellow-light: #ffe066;
+  --gray-dark: #2c2c2c;
+  --gray-medium: #4a4a4a;
+  --gray-light: #e0e0e0;
+  --gray-bg: #f5f5f5;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+  background-color: var(--gray-bg);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.btn-primary {
+  background-color: var(--yellow-primary);
+  border-color: var(--yellow-dark);
+  color: var(--gray-dark);
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+.btn-primary:hover {
+  background-color: var(--yellow-dark);
+  border-color: var(--yellow-dark);
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.btn-secondary {
+  background-color: var(--gray-medium);
+  border-color: var(--gray-dark);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.btn-secondary:hover {
+  background-color: var(--gray-dark);
+  border-color: var(--gray-dark);
+}
+
+.navbar {
+  background-color: var(--gray-dark) !important;
+}
+
+.navbar-brand, .nav-link {
+  color: var(--yellow-primary) !important;
+}
+
+.nav-link:hover {
+  color: var(--yellow-light) !important;
+}
+
+.card {
+  border-color: var(--gray-light);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.card-title {
+  color: var(--gray-dark);
+}
+
+.bg-yellow {
+  background-color: var(--yellow-primary);
+  color: var(--gray-dark);
 }

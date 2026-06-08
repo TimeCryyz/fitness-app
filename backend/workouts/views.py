@@ -12,16 +12,12 @@ from .serializers import (
 )
 from .permissions import IsAuthorOrReadOnly
 
-
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
-    """ViewSet для категорий упражнений (только чтение)"""
     queryset = ExerciseCategory.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [permissions.AllowAny]
 
-
 class WorkoutViewSet(viewsets.ModelViewSet):
-    """ViewSet для тренировок (CRUD + дополнительные действия)"""
     queryset = Workout.objects.filter(is_published=True)
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_fields = ['category']
@@ -47,7 +43,6 @@ class WorkoutViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def increment_views(self, request, pk=None):
-        """Увеличить счётчик просмотров тренировки"""
         workout = self.get_object()
         workout.views += 1
         workout.save(update_fields=['views'])
@@ -55,14 +50,11 @@ class WorkoutViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'])
     def my_workouts(self, request):
-        """Получить тренировки текущего пользователя"""
         workouts = Workout.objects.filter(author=request.user)
         serializer = self.get_serializer(workouts, many=True)
         return Response(serializer.data)
 
-
 class CommentViewSet(viewsets.ModelViewSet):
-    """ViewSet для комментариев"""
     queryset = Comment.objects.all()
     serializer_class = CommentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
