@@ -94,13 +94,6 @@ function WorkoutDetail() {
       setCommentList(prev =>
         prev.map(c => c.id === tempId ? response.data : c)
       );
-
-      if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
-        wsRef.current.send(JSON.stringify({
-          text: currentText,
-          user_id: user.id
-        }));
-      }
     } catch (error) {
       console.error('Ошибка отправки:', error);
       setCommentList(prev => prev.filter(c => c.id !== tempId));
@@ -140,16 +133,35 @@ function WorkoutDetail() {
 
           {user ? (
             <form onSubmit={sendComment} className="mb-4">
-              <div className="input-group">
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <input
                   type="text"
-                  className="form-control"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Написать комментарий..."
-                  style={{ background: '#1c1c1e', border: '1px solid #3a3a3c', color: '#fff' }}
+                  style={{
+                    flex: 1,
+                    background: '#1c1c1e',
+                    border: '1px solid #3a3a3c',
+                    color: '#ffffff',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '12px',
+                    fontSize: '0.9rem'
+                  }}
                 />
-                <button type="submit" className="btn btn-primary">Отправить</button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  style={{
+                    background: 'linear-gradient(135deg, #ff3b30 0%, #ff9500 100%)',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '0.75rem 1.5rem',
+                    fontWeight: '600'
+                  }}
+                >
+                  Отправить
+                </button>
               </div>
             </form>
           ) : (
