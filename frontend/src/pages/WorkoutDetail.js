@@ -11,6 +11,7 @@ function WorkoutDetail() {
   const [commentText, setCommentText] = useState('');
   const [loading, setLoading] = useState(true);
   const wsRef = useRef(null);
+  const hasIncrementedRef = useRef(false);
 
   useEffect(() => {
     loadWorkout();
@@ -49,7 +50,10 @@ function WorkoutDetail() {
     try {
       const response = await workouts.getById(id);
       setWorkout(response.data);
-      await workouts.incrementViews(id);
+      if (!hasIncrementedRef.current) {
+        await workouts.incrementViews(id);
+        hasIncrementedRef.current = true;
+      }
     } catch (error) {
       console.error('Ошибка загрузки тренировки:', error);
     }
@@ -106,7 +110,7 @@ function WorkoutDetail() {
 
   return (
     <div className="container mt-4">
-      <Link to="/" className="btn btn-secondary mb-3">← Назад</Link>
+      <Link to="/workouts" className="btn btn-secondary mb-3">← Назад</Link>
 
       <div className="row">
         <div className="col-md-8">
