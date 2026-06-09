@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import WorkoutDetail from './pages/WorkoutDetail';
+import FavoritesPage from './pages/FavoritesPage';
 import { workouts, categories } from './services/api';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
@@ -25,6 +26,7 @@ function Navbar() {
             {isAuthenticated ? (
               <>
                 <li className="nav-item"><Link className="nav-link" to="/my-workouts">Мои тренировки</Link></li>
+                <li className="nav-item"><Link className="nav-link" to="/favorites">Избранное</Link></li>
                 <li className="nav-item"><Link className="nav-link" to="/create">Создать</Link></li>
                 <li className="nav-item"><button className="nav-link btn btn-link" onClick={logout}>Выйти ({user?.username})</button></li>
               </>
@@ -46,7 +48,6 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [totalWorkouts, setTotalWorkouts] = useState(0);
   const [totalCategories, setTotalCategories] = useState(0);
-  const [totalUsers, setTotalUsers] = useState(0);
 
   const loadData = async () => {
     setLoading(true);
@@ -62,8 +63,6 @@ function Home() {
 
       const categoriesData = categoriesRes.data.results || categoriesRes.data;
       setTotalCategories(categoriesData.length);
-
-      setTotalUsers(1);
 
     } catch (error) {
       console.error('Ошибка загрузки:', error);
@@ -102,10 +101,6 @@ function Home() {
           <div className="stat-number">{totalCategories}</div>
           <div className="stat-label">Категорий</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-number">{totalUsers}+</div>
-          <div className="stat-label">Пользователей</div>
-        </div>
       </div>
 
       {popularWorkouts.length > 0 && (
@@ -135,17 +130,21 @@ function WorkoutsPage() {
   const [workoutList, setWorkoutList] = useState([]);
   const [categoriesList, setCategoriesList] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryData, setSelectedCategoryData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadData();
-  }, [selectedCategory]);
+  }, [selectedCategory, searchQuery]);
 
   const loadData = async () => {
     setLoading(true);
     try {
-      const params = selectedCategory ? { category: selectedCategory } : {};
+      const params = {};
+      if (selectedCategory) params.category = selectedCategory;
+      if (searchQuery) params.search = searchQuery;
+
       const [workoutsRes, categoriesRes] = await Promise.all([
         workouts.getAll(params),
         categories.getAll(),
@@ -168,9 +167,22 @@ function WorkoutsPage() {
 
   return (
     <div className="container mt-4">
+      <h1>Все тренировки</h1>
+      <p className="lead">Выберите программу, которая подходит именно вам</p>
+
       <div className="row mt-4">
         <div className="col-md-3">
           <div className="filter-card">
+            <h5 className="filter-title">Поиск</h5>
+            <input
+              type="text"
+              className="form-control"
+              placeholder="Поиск по названию..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <div className="filter-card mt-3">
             <h5 className="filter-title">Фильтр</h5>
             <div className="category-list">
               <div
@@ -200,9 +212,6 @@ function WorkoutsPage() {
         </div>
 
         <div className="col-md-9">
-          <h1>Все тренировки</h1>
-          <p className="lead">Выберите программу, которая подходит именно вам</p>
-
           {selectedCategoryData && (
             <div className="category-alert">
               <span className="category-alert-title">{selectedCategoryData.name}</span>
@@ -211,7 +220,7 @@ function WorkoutsPage() {
           )}
 
           {loading ? (<div className="text-center">Загрузка...</div>
-          ) : workoutList.length === 0 ? (<div className="empty-state">Нет тренировок в этой категории</div>
+          ) : workoutList.length === 0 ? (<div className="empty-state">Нет тренировок</div>
           ) : (
             <div className="row">
               {workoutList.map((workout, index) => (
@@ -531,6 +540,7 @@ function App() {
           <Route path="/workout/:id" element={<WorkoutDetail />} />
           <Route path="/my-workouts" element={<MyWorkouts />} />
           <Route path="/create" element={<CreateWorkout />} />
+          <Route path="/favorites" element={<FavoritesPage />} />
         </Routes>
       </Router>
     </AuthProvider>

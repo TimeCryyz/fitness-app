@@ -2,13 +2,15 @@ from rest_framework import viewsets, permissions, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import ExerciseCategory, Workout, Comment
+from django.db.models import Q
+from .models import ExerciseCategory, Workout, Comment, Favorite
 from .serializers import (
     CategorySerializer,
     WorkoutListSerializer,
     WorkoutDetailSerializer,
     WorkoutCreateUpdateSerializer,
-    CommentSerializer
+    CommentSerializer,
+    FavoriteSerializer
 )
 from .permissions import IsAuthorOrReadOnly
 
@@ -19,10 +21,18 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
 
 class WorkoutViewSet(viewsets.ModelViewSet):
     queryset = Workout.objects.filter(is_published=True)
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
+    filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['category']
-    search_fields = ['title', 'description']
     ordering_fields = ['created_at', 'views', 'duration_minutes']
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(
+                Q(title__icontains=search)
+            )
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -53,6 +63,27 @@ class WorkoutViewSet(viewsets.ModelViewSet):
         workouts = Workout.objects.filter(author=request.user)
         serializer = self.get_serializer(workouts, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def favorite(self, request, pk=None):
+        workout = self.get_object()
+        favorite, created = Favorite.objects.get_or_create(user=request.user, workout=workout)
+        if not created:
+            favorite.delete()
+            return Response({'status': 'removed'})
+        return Response({'status': 'added'})
+
+    @action(detail=False, methods=['get'])
+    def favorites(self, request):
+        favorites = Favorite.objects.filter(user=request.user).select_related('workout')
+        serializer = FavoriteSerializer(favorites, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['get'])
+    def is_favorited(self, request, pk=None):
+        workout = self.get_object()
+        is_fav = Favorite.objects.filter(user=request.user, workout=workout).exists()
+        return Response({'is_favorited': is_fav})
 
 class CommentViewSet(viewsets.ModelViewSet):
     queryset = Comment.objects.all()

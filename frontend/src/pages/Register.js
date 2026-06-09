@@ -3,26 +3,35 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 function Register() {
-  const [formData, setFormData] = useState({ username: '', email: '', password: '', password2: '' });
-  const [error, setError] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    password2: '',
+  });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) {
+      setErrors({ ...errors, [e.target.name]: '' });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setErrors({});
+    setLoading(true);
 
     if (formData.password !== formData.password2) {
-      setError('Пароли не совпадают');
+      setErrors({ password2: 'Пароли не совпадают' });
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
     try {
       await register({
         username: formData.username,
@@ -32,7 +41,11 @@ function Register() {
       });
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.password?.[0] || 'Ошибка регистрации');
+      if (err.response?.data) {
+        setErrors(err.response.data);
+      } else {
+        setErrors({ general: 'Ошибка регистрации. Попробуйте позже.' });
+      }
     } finally {
       setLoading(false);
     }
@@ -45,29 +58,83 @@ function Register() {
           <div className="card">
             <div className="card-body">
               <h2 className="card-title text-center mb-4">Регистрация</h2>
-              {error && <div className="alert alert-danger">{error}</div>}
+
+              {errors.general && (
+                <div className="alert alert-danger">{errors.general}</div>
+              )}
+
               <form onSubmit={handleSubmit}>
                 <div className="mb-3">
                   <label className="form-label">Имя пользователя</label>
-                  <input type="text" name="username" className="form-control" value={formData.username} onChange={handleChange} required />
+                  <input
+                    type="text"
+                    name="username"
+                    className={`form-control ${errors.username ? 'is-invalid' : ''}`}
+                    value={formData.username}
+                    onChange={handleChange}
+                    required
+                  />
+                  {errors.username && (
+                    <div className="invalid-feedback">{errors.username}</div>
+                  )}
                 </div>
+
                 <div className="mb-3">
                   <label className="form-label">Email</label>
-                  <input type="email" name="email" className="form-control" value={formData.email} onChange={handleChange} required />
+                  <input
+                    type="email"
+                    name="email"
+                    className={`form-control ${errors.email ? 'is-invalid' : ''}`}
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                  />
+                  {errors.email && (
+                    <div className="invalid-feedback">{errors.email}</div>
+                  )}
                 </div>
+
                 <div className="mb-3">
                   <label className="form-label">Пароль</label>
-                  <input type="password" name="password" className="form-control" value={formData.password} onChange={handleChange} required />
+                  <input
+                    type="password"
+                    name="password"
+                    className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                  />
+                  {errors.password && (
+                    <div className="invalid-feedback">{errors.password}</div>
+                  )}
                 </div>
+
                 <div className="mb-3">
                   <label className="form-label">Подтверждение пароля</label>
-                  <input type="password" name="password2" className="form-control" value={formData.password2} onChange={handleChange} required />
+                  <input
+                    type="password"
+                    name="password2"
+                    className={`form-control ${errors.password2 ? 'is-invalid' : ''}`}
+                    value={formData.password2}
+                    onChange={handleChange}
+                    required
+                  />
+                  {errors.password2 && (
+                    <div className="invalid-feedback">{errors.password2}</div>
+                  )}
                 </div>
-                <button type="submit" className="btn btn-primary w-100" disabled={loading}>
+
+                <button
+                  type="submit"
+                  className="btn btn-primary w-100"
+                  disabled={loading}
+                >
                   {loading ? 'Регистрация...' : 'Зарегистрироваться'}
                 </button>
               </form>
-              <p className="text-center mt-3">Уже есть аккаунт? <Link to="/login">Войти</Link></p>
+              <p className="text-center mt-3">
+                Уже есть аккаунт? <Link to="/login">Войти</Link>
+              </p>
             </div>
           </div>
         </div>

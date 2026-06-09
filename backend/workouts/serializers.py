@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import ExerciseCategory, Workout, Comment
+from .models import ExerciseCategory, Workout, Comment, Favorite
 
 class CategorySerializer(serializers.ModelSerializer):
     workout_count = serializers.IntegerField(source='workouts.count', read_only=True)
@@ -37,3 +37,11 @@ class WorkoutCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Workout
         fields = ['title', 'description', 'category', 'duration_minutes', 'calories_burn', 'video_url', 'image', 'is_published']
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    workout_title = serializers.CharField(source='workout.title', read_only=True)
+    workout_id = serializers.IntegerField(source='workout.id', read_only=True)
+
+    class Meta:
+        model = Favorite
+        fields = ['id', 'workout_id', 'workout_title', 'created_at']

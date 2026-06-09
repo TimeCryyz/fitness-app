@@ -9,20 +9,43 @@ function WorkoutDetail() {
   const [workout, setWorkout] = useState(null);
   const [commentList, setCommentList] = useState([]);
   const [commentText, setCommentText] = useState('');
+  const [views, setViews] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isFavorited, setIsFavorited] = useState(false);
   const wsRef = useRef(null);
   const hasIncrementedRef = useRef(false);
+  const initialLoadRef = useRef(false);
 
   useEffect(() => {
-    loadWorkout();
-    loadComments();
+    if (initialLoadRef.current) return;
+    initialLoadRef.current = true;
+
+    const loadData = async () => {
+      setLoading(true);
+      try {
+        const workoutRes = await workouts.getById(id);
+        setWorkout(workoutRes.data);
+        setViews(workoutRes.data.views);
+
+        const commentsRes = await comments.getByWorkout(id);
+        const commentsData = commentsRes.data?.results || commentsRes.data || [];
+        setCommentList(commentsData);
+
+        if (user) {
+          const favRes = await workouts.isFavorited(id);
+          setIsFavorited(favRes.data.is_favorited);
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
 
     const socket = new WebSocket(`ws://127.0.0.1:8000/ws/workouts/${id}/`);
     wsRef.current = socket;
-
-    socket.onopen = () => {
-      console.log('WebSocket connected');
-    };
 
     socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
@@ -35,40 +58,37 @@ function WorkoutDetail() {
       }
     };
 
-    socket.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-
     return () => {
       if (socket.readyState === WebSocket.OPEN) {
         socket.close();
       }
     };
-  }, [id]);
+  }, [id, user]);
 
-  const loadWorkout = async () => {
+  const incrementView = async () => {
+    if (hasIncrementedRef.current) return;
+    hasIncrementedRef.current = true;
     try {
-      const response = await workouts.getById(id);
-      setWorkout(response.data);
-      if (!hasIncrementedRef.current) {
-        await workouts.incrementViews(id);
-        hasIncrementedRef.current = true;
-      }
+      await workouts.incrementViews(id);
+      setViews(prev => prev + 1);
     } catch (error) {
-      console.error('Ошибка загрузки тренировки:', error);
+      console.error('Ошибка увеличения просмотров:', error);
     }
   };
 
-  const loadComments = async () => {
+  useEffect(() => {
+    if (!loading && !hasIncrementedRef.current) {
+      incrementView();
+    }
+  }, [loading]);
+
+  const handleFavorite = async () => {
+    if (!user) return;
     try {
-      const response = await comments.getByWorkout(id);
-      const commentsData = response.data?.results || response.data || [];
-      setCommentList(commentsData);
+      await workouts.favorite(id);
+      setIsFavorited(!isFavorited);
     } catch (error) {
-      console.error('Ошибка загрузки комментариев:', error);
-      setCommentList([]);
-    } finally {
-      setLoading(false);
+      console.error('Ошибка:', error);
     }
   };
 
@@ -117,14 +137,25 @@ function WorkoutDetail() {
 
   return (
     <div className="container mt-4">
-      <Link to="/workouts" className="btn btn-secondary mb-3">← Назад</Link>
+      <Link to="/workouts" className="btn btn-secondary mb-3">Назад</Link>
 
       <div className="row">
         <div className="col-md-8">
-          <h1 style={{ color: '#fff' }}>{workout.title}</h1>
+          <div className="d-flex justify-content-between align-items-start">
+            <h1 style={{ color: '#fff' }}>{workout.title}</h1>
+            {user && (
+              <button
+                onClick={handleFavorite}
+                className={`btn ${isFavorited ? 'btn-danger' : 'btn-outline-danger'}`}
+                style={{ fontSize: '1.5rem', padding: '0.5rem 1rem' }}
+              >
+                {isFavorited ? 'В избранном' : 'В избранное'}
+              </button>
+            )}
+          </div>
           <p style={{ color: '#8b949e' }}>
             Категория: {workout.category?.name || workout.category_name} | Длительность: {workout.duration_minutes} мин |
-            Калории: {workout.calories_burn} | Просмотров: {workout.views}
+            Калории: {workout.calories_burn} | Просмотров: {views}
           </p>
           {workout.image && (
             <img src={workout.image} className="img-fluid mb-3" alt={workout.title} style={{ maxHeight: '300px', objectFit: 'cover', borderRadius: '16px' }} />

@@ -2,7 +2,7 @@ from rest_framework import generics, permissions
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-from .serializers import RegisterSerializer, ProfileUpdateSerializer
+from .serializers import RegisterSerializer, ProfileSerializer
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -18,7 +18,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     pass
 
 class ProfileView(generics.RetrieveUpdateAPIView):
-    serializer_class = ProfileUpdateSerializer
+    serializer_class = ProfileSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_object(self):
